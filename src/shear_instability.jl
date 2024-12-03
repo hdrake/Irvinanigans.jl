@@ -10,6 +10,15 @@ function initialize_shear_layer(Ri; L=10, H=10, Nx=64, Nz=64, output_writer=true
         topology=(Periodic, Flat, Bounded)
     )
 
+    # Initialize particle positions
+    n_particles=100;
+    x₀ = (rand(100) .- 0.5) .* 10;
+    y₀ = zeros(n_particles);
+    z₀ = zeros(n_particles);
+    lagrangian_particles = LagrangianParticles(x=x₀, y=y₀, z=z₀)
+    @show n_particles;
+    
+    # Definining background flow fields
     shear_flow(x, z, t) = tanh(z)
     U = BackgroundField(shear_flow)
 
@@ -19,6 +28,7 @@ function initialize_shear_layer(Ri; L=10, H=10, Nx=64, Nz=64, output_writer=true
     model = NonhydrostaticModel(timestepper = :RungeKutta3,
                               advection = UpwindBiasedFifthOrder(),
                                    grid = grid,
+                              particles = lagrangian_particles,
                                coriolis = nothing,
                       background_fields = (u=U, b=B),
                                 closure = ScalarDiffusivity(ν=5e-5, κ=5e-5),
@@ -29,7 +39,7 @@ function initialize_shear_layer(Ri; L=10, H=10, Nx=64, Nz=64, output_writer=true
     simulation = Simulation(model, Δt=Δt, stop_iteration=2500, verbose=true)
 
     @info "Setting initial conditions"
-    
+
     u, v, w = model.velocities
     b = model.tracers.b
     B = Field(b + model.background_fields.tracers.b)
@@ -59,6 +69,13 @@ function initialize_shear_layer(Ri; L=10, H=10, Nx=64, Nz=64, output_writer=true
             global_attributes = global_attributes,
             overwrite_existing = true
         )
+
+        simulation.output_writers[:particles] = NetCDFOutputWriter(
+            model, model.particles,
+            schedule=TimeInterval(0.5),
+            filename="../data/lagrangian_particles.nc",
+        )
+
     end
         
     return simulation
