@@ -73,7 +73,7 @@ function initialize_shear_layer(Ri; L=10, H=10, Nx=64, Nz=64, output_writer=true
         simulation.output_writers[:particles] = NetCDFOutputWriter(
             model, model.particles,
             schedule=TimeInterval(0.5),
-            filename="../data/lagrangian_particles.nc",
+            filename="../data/raw_output/lagrangian_particles.nc",
         )
 
     end
