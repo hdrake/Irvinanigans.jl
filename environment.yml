@@ -1,0 +1,14 @@
+name: irvinanigans
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - blas[build=openblas]
+  - ipython
+  - pip
+  - jupyterlab
+  - matplotlib
+  - xarray
+  - numpy
+  - scipy
+  - netcdf4
